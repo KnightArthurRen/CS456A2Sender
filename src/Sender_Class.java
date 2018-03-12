@@ -38,6 +38,7 @@ public class Sender_Class {
 
         @Override
         public void run() {
+            System.out.println("receive thread called");
             while(true) { // and waiting for all sended
 //                Received the package
                 try {
@@ -123,6 +124,7 @@ public class Sender_Class {
         }
         @Override
         public void run() {
+            System.out.println("sender thread called");
             content_length = Sender_Class.this.contents.length();
 //                Parse the entire content and send it with 500 character chunks each and send
             for(int index = 0; index < content_length; index += 500) {
@@ -197,6 +199,7 @@ public class Sender_Class {
         this.UnACKQueue = new ArrayList<>(10);
         this.timer = new ArrayList<>();
         this.timeout =timeout;
+        System.out.println("Constructor called");
         try {
             socket = new DatagramSocket(Sender_Class_receive_port);
         } catch (java.net.SocketException e) {
@@ -219,6 +222,7 @@ public class Sender_Class {
             System.err.println("Sender_Class: failed to create log files");
         }
 //        Create the threads
+        System.out.println("Thread construction called");
         Receiving = new Receiving(socket);
         Thread receive = new Thread(Receiving);
         receive.start();
