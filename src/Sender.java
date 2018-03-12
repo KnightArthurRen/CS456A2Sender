@@ -38,7 +38,7 @@ public class Sender {
 
         @Override
         public void run() {
-            while(!(Sender.this.shutdown && Sender.this.windowqueue == 0)) { // and waiting for all sended
+            while(true) { // and waiting for all sended
 //                Received the package
                 try {
                     socket.receive(buffer);
@@ -53,8 +53,10 @@ public class Sender {
 
 //                Check the output
                 if(received_packet.getType() == 2) {
+                    Sender.this.queue_lock.lock();
                     Sender.this.shutdown = true;
-                    continue;
+                    Sender.this.queue_lock.unlock();
+                    break;
                 }
 
                 Sender.this.queue_lock.lock();
@@ -100,8 +102,7 @@ public class Sender {
             //                        send the package
             Sender.this.windowqueue++;
             Sender.this.UnACKQueue.add(new packet(p));
-
-            DatagramPacket binary = new DatagramPacket(p.getData(),p.getData().length, emulator_ip,emulator_port);
+            DatagramPacket binary = new DatagramPacket(p.getUDPdata(),p.getUDPdata().length, emulator_ip,emulator_port);
             try{
                 socket.send(binary);
             } catch (java.io.IOException e) {
@@ -123,43 +124,67 @@ public class Sender {
         @Override
         public void run() {
             content_length = Sender.this.contents.length();
-            while(!(Sender.this.shutdown && Sender.this.windowqueue == 0)){
 //                Parse the entire content and send it with 500 character chunks each and send
-                for(int index = 0; index < content_length; index += 500) {
+            for(int index = 0; index < content_length; index += 500) {
 //                    Create the packet
-                    try {
-                        if(index + 500 >= content_length) {
-                            new_packet = packet.createPacket(seqnum % 32, Sender.this.contents.substring(index));
-                        } else {
-                            new_packet = packet.createPacket(seqnum % 32, Sender.this.contents.substring(index,index + 500));
-                        }
-                    } catch (java.lang.Exception e) {
-                        System.err.println("Sender: create new packet failed!");
+                try {
+                    if(index + 500 >= content_length) {
+                        new_packet = packet.createPacket(seqnum % 32, Sender.this.contents.substring(index));
+                        seqnum++;
+                    } else {
+                        new_packet = packet.createPacket(seqnum % 32, Sender.this.contents.substring(index,index + 500));
+                        seqnum++;
                     }
+                } catch (java.lang.Exception e) {
+                    System.err.println("Sender: create new packet failed!");
+                }
 
-                    while(true) {
-                        if(Sender.this.windowqueue < 10) {
-                            Sender.this.queue_lock.lock();
-                            send_pkg(new_packet);
-                            Sender.this.queue_lock.unlock();
-                            break;
-                        } else if(System.nanoTime() - Sender.this.timer.get(0) < timeout) {
-                            //                    If there is one time out, resend all after timeout
-                            Sender.this.queue_lock.lock();
-                            Sender.this.windowqueue = 0;
-                            Sender.this.timer.clear();
-                            List<packet> ResentList = new ArrayList<>();
-                            for(packet p : Sender.this.UnACKQueue) {
-                                ResentList.add(new packet(p));
-                            }
-                            Sender.this.UnACKQueue.clear();
-                            for(packet p : ResentList) {
-                                send_pkg(p);
-                            }
-                            Sender.this.queue_lock.unlock();
+                while(true) {
+                    if(Sender.this.windowqueue < 10) {
+                        Sender.this.queue_lock.lock();
+                        send_pkg(new_packet);
+                        Sender.this.queue_lock.unlock();
+                        break;
+                    } else if(System.nanoTime() - Sender.this.timer.get(0) < timeout) {
+                        //                    If there is one time out, resend all after timeout
+                        Sender.this.queue_lock.lock();
+                        Sender.this.windowqueue = 0;
+                        Sender.this.timer.clear();
+                        List<packet> ResentList = new ArrayList<>();
+                        for(packet p : Sender.this.UnACKQueue) {
+                            ResentList.add(new packet(p));
                         }
+                        Sender.this.UnACKQueue.clear();
+                        for(packet p : ResentList) {
+                            send_pkg(p);
+                        }
+                        Sender.this.queue_lock.unlock();
                     }
                 }
+            }
+//            After all the packages are send, send the EOT
+            try{
+                new_packet = packet.createEOT(seqnum % 32);
+                long eot_timer = System.nanoTime();
+                DatagramPacket binary = new DatagramPacket(new_packet.getUDPdata(),new_packet.getUDPdata().length, emulator_ip,emulator_port);
+                while(true) {
+                    Sender.this.queue_lock.lock();
+                    if(Sender.this.shutdown) {
+                        Sender.this.queue_lock.unlock();
+                        break;
+                    }
+                    Sender.this.queue_lock.unlock();
+                    if(System.nanoTime() - eot_timer >  timeout) {
+                        try {
+                            socket.send(binary);
+                        } catch (java.io.IOException e) {
+                            System.err.println("Sender: cannot sent EOT");
+                        }
+                        eot_timer = System.nanoTime();
+                    }
+                }
+            } catch (java.lang.Exception e) {
+                System.err.println("Sender: create EOT failed!");
             }
         }
 }
