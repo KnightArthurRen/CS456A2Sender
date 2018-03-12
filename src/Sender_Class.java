@@ -140,12 +140,14 @@ public class Sender_Class {
                 } catch (java.lang.Exception e) {
                     System.err.println("Sender_Class: create new packet failed!");
                 }
-
+                System.out.println("Package constructed");
                 while(true) {
                     if(Sender_Class.this.windowqueue < 10) {
+                        System.out.println("Started to send");
                         Sender_Class.this.queue_lock.lock();
                         send_pkg(new_packet);
                         Sender_Class.this.queue_lock.unlock();
+                        System.out.println("package sented");
                         break;
                     } else if(System.nanoTime() - Sender_Class.this.timer.get(0) < timeout) {
                         //                    If there is one time out, resend all after timeout
