@@ -1,6 +1,4 @@
-/**
- * Created by renyi on 2018-03-11.
- */
+//Created by renyi on 2018-03-11.
 
 import java.io.FileWriter;
 import java.net.DatagramSocket;
@@ -25,6 +23,7 @@ public class Sender {
     private boolean shutdown = false;
     private FileWriter seqnum,ack;
     private List<Long> timer;
+    private long timeout;
 
 //    Subclass for Receivng Thread
     class Receiving implements Runnable {
@@ -144,7 +143,7 @@ public class Sender {
                             send_pkg(new_packet);
                             Sender.this.queue_lock.unlock();
                             break;
-                        } else if(System.nanoTime() - Sender.this.timer.get(0) < 100) {
+                        } else if(System.nanoTime() - Sender.this.timer.get(0) < timeout) {
                             //                    If there is one time out, resend all after timeout
                             Sender.this.queue_lock.lock();
                             Sender.this.windowqueue = 0;
@@ -165,13 +164,14 @@ public class Sender {
         }
 }
 //    Constructor
-    public Sender(InetAddress emulator_ip, int emulator_port, int sender_receive_port,String filename) {
+    public Sender(InetAddress emulator_ip, int emulator_port, int sender_receive_port,String filename,long timeout) {
 //        Construct the socket
         this.emulator_ip = emulator_ip;
         this.emulator_port = emulator_port;
         this.queue_lock = new ReentrantLock();
         this.UnACKQueue = new ArrayList<>(10);
         this.timer = new ArrayList<>();
+        this.timeout =timeout;
         try {
             socket = new DatagramSocket(sender_receive_port);
         } catch (java.net.SocketException e) {
