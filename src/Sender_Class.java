@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class Sender {
+public class Sender_Class {
     private DatagramSocket socket;
     private InetAddress emulator_ip;
     private String contents;
@@ -43,47 +43,47 @@ public class Sender {
                 try {
                     socket.receive(buffer);
                 } catch (java.io.IOException e) {
-                    System.err.println("Sender: Receiving package failed!");
+                    System.err.println("Sender_Class: Receiving package failed!");
                 }
                 try {
                     received_packet = packet.parseUDPdata(buffer.getData());
                 } catch (java.lang.Exception e) {
-                    System.err.println("Sender: Received package cannot be parsed");
+                    System.err.println("Sender_Class: Received package cannot be parsed");
                 }
 
 //                Check the output
                 if(received_packet.getType() == 2) {
-                    Sender.this.queue_lock.lock();
-                    Sender.this.shutdown = true;
-                    Sender.this.queue_lock.unlock();
+                    Sender_Class.this.queue_lock.lock();
+                    Sender_Class.this.shutdown = true;
+                    Sender_Class.this.queue_lock.unlock();
                     break;
                 }
 
-                Sender.this.queue_lock.lock();
+                Sender_Class.this.queue_lock.lock();
 //                Record the log
                 String log = String.valueOf(received_packet.getSeqNum());
                 log += "\n";
                 try{
-                    Sender.this.ack.write(log);
+                    Sender_Class.this.ack.write(log);
                 } catch (java.io.IOException e) {
-                    System.err.println("Sender: failed to log ack");
+                    System.err.println("Sender_Class: failed to log ack");
                 }
 
 //                First loop check if the ack is duplicate or not
                 boolean duplicate = true;
                 int i = 0;
-                for(; i < Sender.this.UnACKQueue.size(); i++) {
-                    if(Sender.this.UnACKQueue.get(i).getSeqNum() == received_packet.getSeqNum()) {
+                for(; i < Sender_Class.this.UnACKQueue.size(); i++) {
+                    if(Sender_Class.this.UnACKQueue.get(i).getSeqNum() == received_packet.getSeqNum()) {
                         duplicate = false;
                         break;
                     }
                 }
 //                if it's not a duplicate, ack everything up to the ack seq_num
                 if (!duplicate){
-                    Sender.this.UnACKQueue.subList(0,i).clear();
-                    Sender.this.timer.subList(0,i).clear();
+                    Sender_Class.this.UnACKQueue.subList(0,i).clear();
+                    Sender_Class.this.timer.subList(0,i).clear();
                 }
-                Sender.this.queue_lock.unlock();
+                Sender_Class.this.queue_lock.unlock();
             }
         }
 }
@@ -100,65 +100,65 @@ public class Sender {
         }
         private void send_pkg(packet p){
             //                        send the package
-            Sender.this.windowqueue++;
-            Sender.this.UnACKQueue.add(new packet(p));
+            Sender_Class.this.windowqueue++;
+            Sender_Class.this.UnACKQueue.add(new packet(p));
             DatagramPacket binary = new DatagramPacket(p.getUDPdata(),p.getUDPdata().length, emulator_ip,emulator_port);
             try{
                 socket.send(binary);
             } catch (java.io.IOException e) {
-                System.err.println("Sender: failed to send new packet");
+                System.err.println("Sender_Class: failed to send new packet");
             }
 //            Add timer
-            Sender.this.timer.add(System.nanoTime());
+            Sender_Class.this.timer.add(System.nanoTime());
 //                        Record the log
             String log = String.valueOf(p.getSeqNum());
             log += "\n";
             try{
-                Sender.this.seqnum.write(log);
+                Sender_Class.this.seqnum.write(log);
             } catch (java.io.IOException e) {
-                System.err.println("Sender: failed to log seqnum");
+                System.err.println("Sender_Class: failed to log seqnum");
             }
 
 
         }
         @Override
         public void run() {
-            content_length = Sender.this.contents.length();
+            content_length = Sender_Class.this.contents.length();
 //                Parse the entire content and send it with 500 character chunks each and send
             for(int index = 0; index < content_length; index += 500) {
 //                    Create the packet
                 try {
                     if(index + 500 >= content_length) {
-                        new_packet = packet.createPacket(seqnum % 32, Sender.this.contents.substring(index));
+                        new_packet = packet.createPacket(seqnum % 32, Sender_Class.this.contents.substring(index));
                         seqnum++;
                     } else {
-                        new_packet = packet.createPacket(seqnum % 32, Sender.this.contents.substring(index,index + 500));
+                        new_packet = packet.createPacket(seqnum % 32, Sender_Class.this.contents.substring(index,index + 500));
                         seqnum++;
                     }
                 } catch (java.lang.Exception e) {
-                    System.err.println("Sender: create new packet failed!");
+                    System.err.println("Sender_Class: create new packet failed!");
                 }
 
                 while(true) {
-                    if(Sender.this.windowqueue < 10) {
-                        Sender.this.queue_lock.lock();
+                    if(Sender_Class.this.windowqueue < 10) {
+                        Sender_Class.this.queue_lock.lock();
                         send_pkg(new_packet);
-                        Sender.this.queue_lock.unlock();
+                        Sender_Class.this.queue_lock.unlock();
                         break;
-                    } else if(System.nanoTime() - Sender.this.timer.get(0) < timeout) {
+                    } else if(System.nanoTime() - Sender_Class.this.timer.get(0) < timeout) {
                         //                    If there is one time out, resend all after timeout
-                        Sender.this.queue_lock.lock();
-                        Sender.this.windowqueue = 0;
-                        Sender.this.timer.clear();
+                        Sender_Class.this.queue_lock.lock();
+                        Sender_Class.this.windowqueue = 0;
+                        Sender_Class.this.timer.clear();
                         List<packet> ResentList = new ArrayList<>();
-                        for(packet p : Sender.this.UnACKQueue) {
+                        for(packet p : Sender_Class.this.UnACKQueue) {
                             ResentList.add(new packet(p));
                         }
-                        Sender.this.UnACKQueue.clear();
+                        Sender_Class.this.UnACKQueue.clear();
                         for(packet p : ResentList) {
                             send_pkg(p);
                         }
-                        Sender.this.queue_lock.unlock();
+                        Sender_Class.this.queue_lock.unlock();
                     }
                 }
             }
@@ -168,28 +168,28 @@ public class Sender {
                 long eot_timer = System.nanoTime();
                 DatagramPacket binary = new DatagramPacket(new_packet.getUDPdata(),new_packet.getUDPdata().length, emulator_ip,emulator_port);
                 while(true) {
-                    Sender.this.queue_lock.lock();
-                    if(Sender.this.shutdown) {
-                        Sender.this.queue_lock.unlock();
+                    Sender_Class.this.queue_lock.lock();
+                    if(Sender_Class.this.shutdown) {
+                        Sender_Class.this.queue_lock.unlock();
                         break;
                     }
-                    Sender.this.queue_lock.unlock();
+                    Sender_Class.this.queue_lock.unlock();
                     if(System.nanoTime() - eot_timer >  timeout) {
                         try {
                             socket.send(binary);
                         } catch (java.io.IOException e) {
-                            System.err.println("Sender: cannot sent EOT");
+                            System.err.println("Sender_Class: cannot sent EOT");
                         }
                         eot_timer = System.nanoTime();
                     }
                 }
             } catch (java.lang.Exception e) {
-                System.err.println("Sender: create EOT failed!");
+                System.err.println("Sender_Class: create EOT failed!");
             }
         }
 }
 //    Constructor
-    public Sender(InetAddress emulator_ip, int emulator_port, int sender_receive_port,String filename,long timeout) {
+    public Sender_Class(InetAddress emulator_ip, int emulator_port, int Sender_Class_receive_port,String filename,long timeout) {
 //        Construct the socket
         this.emulator_ip = emulator_ip;
         this.emulator_port = emulator_port;
@@ -198,16 +198,16 @@ public class Sender {
         this.timer = new ArrayList<>();
         this.timeout =timeout;
         try {
-            socket = new DatagramSocket(sender_receive_port);
+            socket = new DatagramSocket(Sender_Class_receive_port);
         } catch (java.net.SocketException e) {
-            System.err.println("Sender: the port is not avaliable");
+            System.err.println("Sender_Class: the port is not avaliable");
         }
 
 //        Read in the entire file
         try {
             contents = new String(Files.readAllBytes(Paths.get(filename)));
         } catch (java.io.IOException e) {
-            System.err.println("Sender: cannot open the file!");
+            System.err.println("Sender_Class: cannot open the file!");
             e.printStackTrace();
         }
 
@@ -216,7 +216,7 @@ public class Sender {
             seqnum = new FileWriter("seqnum.log");
             ack = new FileWriter("ack.log");
         } catch (java.io.IOException e) {
-            System.err.println("Sender: failed to create log files");
+            System.err.println("Sender_Class: failed to create log files");
         }
 //        Create the threads
         Receiving = new Receiving(socket);
@@ -230,7 +230,7 @@ public class Sender {
             receive.join();
             send.join();
         } catch (Exception e) {
-            System.err.println("Sender: waiting thread crashed!!!");
+            System.err.println("Sender_Class: waiting thread crashed!!!");
         }
     }
 
