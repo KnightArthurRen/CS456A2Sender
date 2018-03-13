@@ -43,6 +43,7 @@ public class Sender_Class {
 //                Received the package
                 try {
                     socket.receive(buffer);
+                    System.out.println("received ack");
                 } catch (java.io.IOException e) {
                     System.err.println("Sender_Class: Receiving package failed!");
                 }
@@ -81,8 +82,10 @@ public class Sender_Class {
                 }
 //                if it's not a duplicate, ack everything up to the ack seq_num
                 if (!duplicate){
+                    System.out.println("Not duplicate!");
                     Sender_Class.this.UnACKQueue.subList(0,i).clear();
                     Sender_Class.this.timer.subList(0,i).clear();
+                    System.out.println("cleaned the queue");
                 }
                 Sender_Class.this.queue_lock.unlock();
             }
