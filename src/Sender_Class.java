@@ -83,9 +83,11 @@ public class Sender_Class {
 //                if it's not a duplicate, ack everything up to the ack seq_num
                 if (!duplicate){
                     System.out.println("Not duplicate!");
+                    Sender_Class.this.windowqueue -= Sender_Class.this.UnACKQueue.subList(0,i).size();
                     Sender_Class.this.UnACKQueue.subList(0,i).clear();
                     Sender_Class.this.timer.subList(0,i).clear();
                     System.out.println("cleaned the queue");
+                    System.out.println("");
                 }
                 Sender_Class.this.queue_lock.unlock();
             }
@@ -145,16 +147,16 @@ public class Sender_Class {
                 }
                 System.out.println("Package constructed");
                 while(true) {
+                    Sender_Class.this.queue_lock.lock();
+                    System.out.println("attempt to send packet");
                     if(Sender_Class.this.windowqueue < 10) {
                         System.out.println("Started to send");
-                        Sender_Class.this.queue_lock.lock();
                         send_pkg(new_packet);
                         Sender_Class.this.queue_lock.unlock();
                         System.out.println("package sented");
                         break;
                     } else if(System.nanoTime() - Sender_Class.this.timer.get(0) < timeout) {
                         //                    If there is one time out, resend all after timeout
-                        Sender_Class.this.queue_lock.lock();
                         Sender_Class.this.windowqueue = 0;
                         Sender_Class.this.timer.clear();
                         List<packet> ResentList = new ArrayList<>();
@@ -165,8 +167,8 @@ public class Sender_Class {
                         for(packet p : ResentList) {
                             send_pkg(p);
                         }
-                        Sender_Class.this.queue_lock.unlock();
                     }
+                    Sender_Class.this.queue_lock.unlock();
                 }
             }
 //            After all the packages are send, send the EOT
