@@ -105,6 +105,7 @@ public class Sender_Class {
         }
         private void send_pkg(packet p){
             //                        send the package
+            System.out.println("Started to send");
             Sender_Class.this.UnACKQueue.add(new packet(p));
             DatagramPacket binary = new DatagramPacket(p.getUDPdata(),p.getUDPdata().length, emulator_ip,emulator_port);
             try{
@@ -122,8 +123,7 @@ public class Sender_Class {
             } catch (java.io.IOException e) {
                 System.err.println("Sender_Class: failed to log seqnum");
             }
-
-
+            System.out.println("package sented");
         }
         @Override
         public void run() {
@@ -148,10 +148,8 @@ public class Sender_Class {
                     Sender_Class.this.queue_lock.lock();
 //                    System.out.println("attempt to send packet");
                     if(Sender_Class.this.UnACKQueue.size() < 10) {
-                        System.out.println("Started to send");
                         send_pkg(new_packet);
                         Sender_Class.this.queue_lock.unlock();
-                        System.out.println("package sented");
                         break;
                     } else if(System.nanoTime() - Sender_Class.this.timer.get(0) < timeout) {
                         System.out.println("over timeout, resent the entire queue");
