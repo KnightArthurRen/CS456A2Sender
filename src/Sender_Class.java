@@ -87,6 +87,7 @@ public class Sender_Class {
                     }
                 }
 //                if it's not a duplicate, ack everything up to the ack seq_num
+                System.out.println("checking duplicate");
                 if (!duplicate){
                     System.out.print("not duplicate ack, ack is ");
                     System.out.println(i);
