@@ -147,8 +147,10 @@ public class Sender_Class {
                 while(true) {
                     Sender_Class.this.queue_lock.lock();
                     System.out.println("attempt to send packet");
+                    if(Sender_Class.this.timer.size() != 0) {
+                        System.out.format("current time is %f \n", System.nanoTime());
+                    }
                     System.out.format("timeout time is %f \n", Sender_Class.this.timer.get(0));
-                    System.out.format("current time is %f \n", System.nanoTime());
                     if(Sender_Class.this.UnACKQueue.size() < 10) {
                         send_pkg(new_packet);
                         Sender_Class.this.queue_lock.unlock();
