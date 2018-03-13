@@ -41,6 +41,7 @@ public class Sender_Class {
             while(true) { // and waiting for all sended
 //                Received the package
                 try {
+                    System.out.println("waiting fo ack");
                     socket.receive(buffer);
                     System.out.println("received ack");
                 } catch (java.io.IOException e) {
@@ -48,6 +49,7 @@ public class Sender_Class {
                 }
                 try {
                     received_packet = packet.parseUDPdata(buffer.getData());
+                    System.out.println("parsed ack");
                 } catch (java.lang.Exception e) {
                     System.err.println("Sender_Class: Received package cannot be parsed");
                 }
@@ -62,7 +64,6 @@ public class Sender_Class {
                     break;
                 }
 
-                Sender_Class.this.queue_lock.lock();
 //                Record the log
                 String log = String.valueOf(received_packet.getSeqNum());
                 log += "\n";
@@ -72,6 +73,7 @@ public class Sender_Class {
                     System.err.println("Sender_Class: failed to log ack");
                 }
 
+                Sender_Class.this.queue_lock.lock();
 //                First loop check if the ack is duplicate or not
                 boolean duplicate = true;
                 int i = 0;
