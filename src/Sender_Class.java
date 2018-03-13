@@ -118,7 +118,7 @@ public class Sender_Class {
         }
         private void send_pkg(packet p){
             //                        send the package
-            System.out.println("Started to send");
+//            System.out.println("Started to send");
             Sender_Class.this.UnACKQueue.add(new packet(p));
             DatagramPacket binary = new DatagramPacket(p.getUDPdata(),p.getUDPdata().length, emulator_ip,emulator_port);
             try{
@@ -136,11 +136,11 @@ public class Sender_Class {
             } catch (java.io.IOException e) {
                 System.err.println("Sender_Class: failed to log seqnum");
             }
-            System.out.println("package sented");
+//            System.out.println("package sented");
         }
         @Override
         public void run() {
-            System.out.println("sender thread called");
+//            System.out.println("sender thread called");
             content_length = Sender_Class.this.contents.length();
 //                Parse the entire content and send it with 500 character chunks each and send
             for(int index = 0; index < content_length; index += 500) {
@@ -156,7 +156,7 @@ public class Sender_Class {
                 } catch (java.lang.Exception e) {
                     System.err.println("Sender_Class: create new packet failed!");
                 }
-                System.out.println("Package constructed");
+//                System.out.println("Package constructed");
                 while(true) {
                     Sender_Class.this.queue_lock.lock();
                     if(Sender_Class.this.timer.size() != 0 && false) {
@@ -171,7 +171,7 @@ public class Sender_Class {
                         Sender_Class.this.queue_lock.unlock();
                         break;
                     } else if(System.nanoTime() - Sender_Class.this.timer.get(0) > timeout) {
-                        System.out.println("over timeout, resent the entire queue");
+//                        System.out.println("over timeout, resent the entire queue");
                         //                    If there is one time out, resend all after timeout
                         Sender_Class.this.timer.clear();
                         List<packet> ResentList = new ArrayList<>();
@@ -192,10 +192,10 @@ public class Sender_Class {
 //                If all is acked, proceed
                 if (Sender_Class.this.UnACKQueue.size() == 0) break;
                 if(System.nanoTime() - Sender_Class.this.timer.get(0) > timeout) {
-                    System.out.println("all pacakge send, over timeout, resent the entire queue");
-                    System.out.print("send package is ");
+//                    System.out.println("all pacakge send, over timeout, resent the entire queue");
+//                    System.out.print("send package is ");
                     for(packet p : Sender_Class.this.UnACKQueue) {
-                        System.out.println(p.getSeqNum());
+//                        System.out.println(p.getSeqNum());
                     }
                     //                    If there is one time out, resend all after timeout
                     List<packet> ResentList = new ArrayList<>();
