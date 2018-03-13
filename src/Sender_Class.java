@@ -83,10 +83,16 @@ public class Sender_Class {
                 }
 //                if it's not a duplicate, ack everything up to the ack seq_num
                 if (!duplicate){
-                    Sender_Class.this.UnACKQueue.subList(0,i).clear();
-                    Sender_Class.this.timer.subList(0,i).clear();
+                    System.out.print("not duplicate ack, ack is ");
+                    System.out.println(i);
+                    if(i == 0) {
+                        Sender_Class.this.UnACKQueue.remove(i);
+                        Sender_Class.this.timer.remove(i);
+                    } else {
+                        Sender_Class.this.UnACKQueue.subList(0,i).clear();
+                        Sender_Class.this.timer.subList(0,i).clear();
+                    }
                     System.out.println("cleaned the queue due to ack");
-                    System.out.println("");
                 }
                 Sender_Class.this.queue_lock.unlock();
             }
