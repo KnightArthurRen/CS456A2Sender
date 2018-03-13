@@ -55,6 +55,7 @@ public class Sender_Class {
 //                Check the output
 //                If the package is EOT
                 if(received_packet.getType() == 2) {
+                    System.out.println("EOT received!");
                     Sender_Class.this.queue_lock.lock();
                     Sender_Class.this.shutdown = true;
                     Sender_Class.this.queue_lock.unlock();
@@ -82,10 +83,9 @@ public class Sender_Class {
                 }
 //                if it's not a duplicate, ack everything up to the ack seq_num
                 if (!duplicate){
-                    System.out.println("Not duplicate!");
                     Sender_Class.this.UnACKQueue.subList(0,i).clear();
                     Sender_Class.this.timer.subList(0,i).clear();
-                    System.out.println("cleaned the queue");
+                    System.out.println("cleaned the queue due to ack");
                     System.out.println("");
                 }
                 Sender_Class.this.queue_lock.unlock();
@@ -172,6 +172,26 @@ public class Sender_Class {
                     }
                     Sender_Class.this.queue_lock.unlock();
                 }
+            }
+//            After all pacakges send, wait for all packages got Ack
+            while(true) {
+                Sender_Class.this.queue_lock.lock();
+//                If all is acked, proceed
+                if (Sender_Class.this.UnACKQueue.size() == 0) break;
+                if(System.nanoTime() - Sender_Class.this.timer.get(0) > timeout) {
+                    System.out.println("over timeout, resent the entire queue");
+                    //                    If there is one time out, resend all after timeout
+                    List<packet> ResentList = new ArrayList<>();
+                    for(packet p : Sender_Class.this.UnACKQueue) {
+                        ResentList.add(new packet(p));
+                    }
+                    Sender_Class.this.timer.clear();
+                    Sender_Class.this.UnACKQueue.clear();
+                    for(packet p : ResentList) {
+                        send_pkg(p);
+                    }
+                }
+                Sender_Class.this.queue_lock.unlock();
             }
 //            After all the packages are send, send the EOT
             try{
