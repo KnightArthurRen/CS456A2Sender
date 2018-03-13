@@ -239,6 +239,7 @@ public class Sender_Class {
                         }
                         eot_timer = System.nanoTime();
                     }
+                    Sender_Class.this.queue_lock.unlock();
                 }
             } catch (java.lang.Exception e) {
                 System.err.println("Sender_Class: create EOT failed!");
