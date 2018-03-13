@@ -80,7 +80,9 @@ public class Sender_Class {
                 System.out.println("Log completed");
                 Sender_Class.this.queue_lock.lock();
 //                First loop check if the ack is duplicate or not
+                System.out.println("acquired lock");
                 boolean duplicate = true;
+                System.out.println("set duplicate to be true");
                 int i = 0;
                 for(; i < Sender_Class.this.UnACKQueue.size(); i++) {
                     System.out.println("what's wrong");
