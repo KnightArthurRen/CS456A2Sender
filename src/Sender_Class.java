@@ -240,6 +240,14 @@ public class Sender_Class {
         } catch (Exception e) {
             System.err.println("Sender_Class: waiting thread crashed!!!");
         }
+//        Once finished, close the file writers
+        try {
+            seqnum.close();
+            ack.close();
+        } catch (java.io.IOException e) {
+            System.err.println("Sender_Class: cannot close file writers!");
+        }
+
     }
 
 }
