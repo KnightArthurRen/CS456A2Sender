@@ -181,7 +181,9 @@ public class Sender_Class {
                 if(System.nanoTime() - Sender_Class.this.timer.get(0) > timeout) {
                     System.out.println("all pacakge send, over timeout, resent the entire queue");
                     System.out.print("send package is ");
-                    System.out.println(Sender_Class.this.UnACKQueue.get(0).getSeqNum());
+                    for(packet p : Sender_Class.this.UnACKQueue) {
+                        System.out.println(p.getSeqNum());
+                    }
                     //                    If there is one time out, resend all after timeout
                     List<packet> ResentList = new ArrayList<>();
                     for(packet p : Sender_Class.this.UnACKQueue) {
