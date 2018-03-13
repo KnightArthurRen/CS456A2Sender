@@ -93,6 +93,8 @@ public class Sender_Class {
                         Sender_Class.this.timer.subList(0,i).clear();
                     }
                     System.out.println("cleaned the queue due to ack");
+                } else {
+                    System.out.println("duplicate ack!");
                 }
                 Sender_Class.this.queue_lock.unlock();
             }
