@@ -15,7 +15,6 @@ public class Sender_Class {
     private InetAddress emulator_ip;
     private String contents;
     private int emulator_port;
-    private int windowqueue = 0;
     private List<packet> UnACKQueue;
     private final Sending Sending;
     private final Receiving Receiving;
@@ -54,6 +53,7 @@ public class Sender_Class {
                 }
 
 //                Check the output
+//                If the package is EOT
                 if(received_packet.getType() == 2) {
                     Sender_Class.this.queue_lock.lock();
                     Sender_Class.this.shutdown = true;
@@ -83,7 +83,6 @@ public class Sender_Class {
 //                if it's not a duplicate, ack everything up to the ack seq_num
                 if (!duplicate){
                     System.out.println("Not duplicate!");
-                    Sender_Class.this.windowqueue -= Sender_Class.this.UnACKQueue.subList(0,i).size();
                     Sender_Class.this.UnACKQueue.subList(0,i).clear();
                     Sender_Class.this.timer.subList(0,i).clear();
                     System.out.println("cleaned the queue");
@@ -106,7 +105,6 @@ public class Sender_Class {
         }
         private void send_pkg(packet p){
             //                        send the package
-            Sender_Class.this.windowqueue++;
             Sender_Class.this.UnACKQueue.add(new packet(p));
             DatagramPacket binary = new DatagramPacket(p.getUDPdata(),p.getUDPdata().length, emulator_ip,emulator_port);
             try{
@@ -149,7 +147,7 @@ public class Sender_Class {
                 while(true) {
                     Sender_Class.this.queue_lock.lock();
                     System.out.println("attempt to send packet");
-                    if(Sender_Class.this.windowqueue < 10) {
+                    if(Sender_Class.this.UnACKQueue.size() < 10) {
                         System.out.println("Started to send");
                         send_pkg(new_packet);
                         Sender_Class.this.queue_lock.unlock();
@@ -157,7 +155,6 @@ public class Sender_Class {
                         break;
                     } else if(System.nanoTime() - Sender_Class.this.timer.get(0) < timeout) {
                         //                    If there is one time out, resend all after timeout
-                        Sender_Class.this.windowqueue = 0;
                         Sender_Class.this.timer.clear();
                         List<packet> ResentList = new ArrayList<>();
                         for(packet p : Sender_Class.this.UnACKQueue) {
