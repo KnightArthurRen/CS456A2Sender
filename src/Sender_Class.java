@@ -56,6 +56,8 @@ public class Sender_Class {
 
 //                Check the output
 //                If the package is EOT
+                System.out.print("the type is ");
+                System.out.println(received_packet.getType());
                 if(received_packet.getType() == 2) {
                     System.out.println("EOT received!");
                     Sender_Class.this.queue_lock.lock();
@@ -81,6 +83,7 @@ public class Sender_Class {
                 boolean duplicate = true;
                 int i = 0;
                 for(; i < Sender_Class.this.UnACKQueue.size(); i++) {
+                    System.out.println("what's wrong");
                     if(Sender_Class.this.UnACKQueue.get(i).getSeqNum() == received_packet.getSeqNum()) {
                         duplicate = false;
                         break;
