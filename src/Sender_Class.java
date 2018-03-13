@@ -146,7 +146,7 @@ public class Sender_Class {
                 System.out.println("Package constructed");
                 while(true) {
                     Sender_Class.this.queue_lock.lock();
-//                    System.out.println("attempt to send packet");
+                    System.out.println("attempt to send packet");
                     if(Sender_Class.this.UnACKQueue.size() < 10) {
                         send_pkg(new_packet);
                         Sender_Class.this.queue_lock.unlock();
