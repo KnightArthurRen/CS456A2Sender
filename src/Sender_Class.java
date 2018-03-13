@@ -62,6 +62,8 @@ public class Sender_Class {
                     Sender_Class.this.shutdown = true;
                     Sender_Class.this.queue_lock.unlock();
                     break;
+                } else {
+                    System.out.println("Not EOT!");
                 }
 
 //                Record the log
@@ -73,6 +75,7 @@ public class Sender_Class {
                     System.err.println("Sender_Class: failed to log ack");
                 }
 
+                System.out.println("Log completed");
                 Sender_Class.this.queue_lock.lock();
 //                First loop check if the ack is duplicate or not
                 boolean duplicate = true;
