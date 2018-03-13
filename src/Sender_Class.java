@@ -146,10 +146,10 @@ public class Sender_Class {
                 System.out.println("Package constructed");
                 while(true) {
                     Sender_Class.this.queue_lock.lock();
-                    System.out.println("attempt to send packet");
-                    System.out.println("current time is");
-                    System.out.println(System.nanoTime());
-                    if(Sender_Class.this.timer.size() != 0) {
+                    if(Sender_Class.this.timer.size() != 0 && false) {
+                        System.out.println("attempt to send packet");
+                        System.out.println("current time is");
+                        System.out.println(System.nanoTime());
                         System.out.println("timeout time is");
                         System.out.println(Sender_Class.this.timer.get(0));
                     }
@@ -157,7 +157,7 @@ public class Sender_Class {
                         send_pkg(new_packet);
                         Sender_Class.this.queue_lock.unlock();
                         break;
-                    } else if(System.nanoTime() - Sender_Class.this.timer.get(0) < timeout) {
+                    } else if(System.nanoTime() - Sender_Class.this.timer.get(0) > timeout) {
                         System.out.println("over timeout, resent the entire queue");
                         //                    If there is one time out, resend all after timeout
                         Sender_Class.this.timer.clear();
