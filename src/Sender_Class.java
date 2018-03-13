@@ -154,6 +154,7 @@ public class Sender_Class {
                         System.out.println("package sented");
                         break;
                     } else if(System.nanoTime() - Sender_Class.this.timer.get(0) < timeout) {
+                        System.out.println("over timeout, resent the entire queue");
                         //                    If there is one time out, resend all after timeout
                         Sender_Class.this.timer.clear();
                         List<packet> ResentList = new ArrayList<>();
