@@ -182,27 +182,12 @@ public class Sender_Class {
             }
 //            After all the packages are send, send the EOT
             try{
-                System.out.println("Start EOT process ");
                 new_packet = packet.createEOT(seqnum % 32);
-                System.out.println("Package created");
-                long eot_timer = System.nanoTime();
                 DatagramPacket binary = new DatagramPacket(new_packet.getUDPdata(),new_packet.getUDPdata().length, emulator_ip,emulator_port);
-                while(true) {
-                    System.out.println("Attempting");
-                    Sender_Class.this.queue_lock.lock();
-                    if(Sender_Class.this.shutdown) {
-                        Sender_Class.this.queue_lock.unlock();
-                        break;
-                    }
-                    if(System.nanoTime() - eot_timer >  timeout) {
-                        try {
-                            socket.send(binary);
-                        } catch (java.io.IOException e) {
-                            System.err.println("Sender_Class: cannot sent EOT");
-                        }
-                        eot_timer = System.nanoTime();
-                    }
-                    Sender_Class.this.queue_lock.unlock();
+                try {
+                    socket.send(binary);
+                } catch (java.io.IOException e) {
+                    System.err.println("Sender_Class: cannot sent EOT");
                 }
             } catch (java.lang.Exception e) {
                 System.err.println("Sender_Class: create EOT failed!");
