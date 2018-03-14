@@ -57,8 +57,7 @@ public class Sender_Class {
                     Sender_Class.this.shutdown = true;
                     Sender_Class.this.queue_lock.unlock();
                     break;
-                } else {
-                }
+                } 
 
 //                Record the log
                 String log = String.valueOf(received_packet.getSeqNum());
@@ -88,7 +87,6 @@ public class Sender_Class {
                         Sender_Class.this.UnACKQueue.subList(0,i).clear();
                         Sender_Class.this.timer.subList(0,i).clear();
                     }
-                } else {
                 }
                 Sender_Class.this.queue_lock.unlock();
             }
@@ -169,8 +167,6 @@ public class Sender_Class {
 //                If all is acked, proceed
                 if (Sender_Class.this.UnACKQueue.size() == 0) break;
                 if(System.nanoTime() - Sender_Class.this.timer.get(0) > timeout) {
-                    for(packet p : Sender_Class.this.UnACKQueue) {
-                    }
                     //                    If there is one time out, resend all after timeout
                     List<packet> ResentList = new ArrayList<>();
                     for(packet p : Sender_Class.this.UnACKQueue) {
