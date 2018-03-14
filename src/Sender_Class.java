@@ -188,6 +188,7 @@ public class Sender_Class {
                 long eot_timer = System.nanoTime();
                 DatagramPacket binary = new DatagramPacket(new_packet.getUDPdata(),new_packet.getUDPdata().length, emulator_ip,emulator_port);
                 while(true) {
+                    System.out.println("Attempting");
                     Sender_Class.this.queue_lock.lock();
                     if(Sender_Class.this.shutdown) {
                         Sender_Class.this.queue_lock.unlock();
