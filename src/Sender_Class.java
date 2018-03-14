@@ -57,7 +57,7 @@ public class Sender_Class {
                     Sender_Class.this.shutdown = true;
                     Sender_Class.this.queue_lock.unlock();
                     break;
-                } 
+                }
 
 //                Record the log
                 String log = String.valueOf(received_packet.getSeqNum());
@@ -182,7 +182,9 @@ public class Sender_Class {
             }
 //            After all the packages are send, send the EOT
             try{
+                System.out.println("Start EOT process ");
                 new_packet = packet.createEOT(seqnum % 32);
+                System.out.println("Package created");
                 long eot_timer = System.nanoTime();
                 DatagramPacket binary = new DatagramPacket(new_packet.getUDPdata(),new_packet.getUDPdata().length, emulator_ip,emulator_port);
                 while(true) {
@@ -191,7 +193,6 @@ public class Sender_Class {
                         Sender_Class.this.queue_lock.unlock();
                         break;
                     }
-                    Sender_Class.this.queue_lock.unlock();
                     if(System.nanoTime() - eot_timer >  timeout) {
                         try {
                             socket.send(binary);
